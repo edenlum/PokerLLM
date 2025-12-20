@@ -17,6 +17,13 @@ class Game:
         """Runs a single hand of poker."""
         self._setup_hand()
         self._run_betting_rounds()
+        
+        # Award pot if there are still active players (showdown scenario)
+        active_players = [p for p in self.players if not p.is_folded]
+        if len(active_players) > 1 and self.pot > 0:
+            self._handle_showdown()
+        elif len(active_players) == 1 and self.pot > 0:
+            self._award_pot_to_winner()
 
     def _setup_hand(self):
         """Initializes a new hand."""
@@ -51,7 +58,7 @@ class Game:
 
     def _active_players_count(self):
         """Returns the number of players still in the hand."""
-        return sum(1 for p in self.players if not p.is_folded)
+        return sum(1 for p in self.players if not (p.is_folded or p.stack <= 0))
 
     def _run_betting_rounds(self):
         """Runs all the betting rounds for a hand."""
@@ -68,9 +75,10 @@ class Game:
                     if self._run_betting_round():
                         self._handle_showdown()
 
-    def _run_betting_round(self):
+    def _run_betting_round(self) -> bool:
         """Runs a single betting round."""
         if self._active_players_count() <= 1:
+            print("No active players left, ending round.")
             return False
 
         is_pre_flop = len(self.community_cards) == 0
@@ -97,11 +105,14 @@ class Game:
                 continue
 
             if self._active_players_count() == 1:
+                print(f"Only one player left, {player.name} wins the pot of {self.pot}!")
                 self._award_pot_to_winner()
                 return False
 
             legal_actions = self._get_legal_actions(player, amount_to_call)
-            action, amount = player.get_action(legal_actions, amount_to_call)
+            # Create game history for the player
+            game_history = f"Current pot: {self.pot}, Community cards: {self.community_cards}"
+            action, amount = player.get_action(game_history, legal_actions, amount_to_call)
 
             amount_to_call = self._handle_player_action(player, action, amount, players_to_act, amount_to_call)
 
