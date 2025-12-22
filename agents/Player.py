@@ -1,4 +1,4 @@
-from simulator.Card import Card
+# Card import removed - not used in base Player class
 from pydantic import BaseModel, Field
 from typing import Literal
 
@@ -12,11 +12,7 @@ class Player:
         self.is_all_in = False
         self.current_bet = 0
         self.scripted_actions = []
-
-    class PokerResponse(BaseModel):
-        action: Literal["check", "call", "raise", "fold", "bet"] = Field(..., description="The action to take")
-        amount: int = Field(0, description="The amount to bet or raise", ge=0)
-
+        
     def validate_action(self, action: str, amount: int, legal_actions: list, amount_to_call: int) -> str:
         """
         Validate an action and amount. Returns error message if invalid, empty string if valid.
@@ -49,7 +45,7 @@ class Player:
             
             # Check minimum bet/raise sizes
             if action == 'bet' and amount_to_call > 0:
-                return f"Cannot bet when there's already a bet to call. Use 'raise' instead."
+                return "Cannot bet when there's already a bet to call. Use 'raise' instead."
         
         elif action in ['call', 'check', 'fold']:
             # These actions should have amount = 0
@@ -58,31 +54,47 @@ class Player:
         
         return ""  # Valid action
 
-    def get_action_with_validation(self, game_history, legal_actions, amount_to_call, error_message: str = "") -> tuple[str, int]:
+    def get_action_with_validation(self, game_history, legal_actions, amount_to_call, error_message: str = "") -> tuple[str, int, bool]:
         """
         Get player action with validation and retry logic.
         This calls the subclass's get_raw_action method and validates the result.
+        
+        Returns:
+            tuple: (action, amount, is_fallback) - is_fallback=True if this was a fallback action
         """
         max_attempts = 5
         
         for attempt in range(max_attempts):
-            # Get raw action from subclass
-            action, amount = self.get_raw_action(game_history, legal_actions, amount_to_call, error_message)
-            
-            # Validate the action
-            error_message = self.validate_action(action, amount, legal_actions, amount_to_call)
-            
-            if not error_message:
-                # Valid action, return it
-                return action, amount
-            
-            # Invalid action, will retry with error message
-            if attempt == max_attempts - 1:
-                # Last attempt failed, raise error
-                raise ValueError(f"❌ {self.name}: Too many invalid attempts ({max_attempts})")
+            try:
+                # Get raw action from subclass
+                action, amount = self.get_raw_action(game_history, legal_actions, amount_to_call, error_message)
+                
+                # Validate the action
+                error_message = self.validate_action(action, amount, legal_actions, amount_to_call)
+                
+                if not error_message:
+                    # Valid action, return it (not a fallback)
+                    return action, amount, False
+                
+                # Invalid action, will retry with error message
+                
+            except Exception as e:
+                # Error getting raw action (e.g., AI API failure)
+                error_message = f"Error getting action: {str(e)}"
         
-        # Should never reach here, but just in case
-        raise ValueError(f"❌ {self.name}: Validation failed after {max_attempts} attempts")
+        # All attempts failed - use fallback action
+        print(f"⚠️  {self.name}: Validation failed after {max_attempts} attempts. Using fallback action.")
+        
+        # Choose safe fallback: check if possible, otherwise fold
+        if "check" in legal_actions:
+            fallback_action = "check"
+            fallback_amount = 0
+        else:
+            fallback_action = "fold"
+            fallback_amount = 0
+        
+        print(f"🔄 {self.name}: Fallback action: {fallback_action}")
+        return fallback_action, fallback_amount, True
 
     def get_raw_action(self, game_history, legal_actions, amount_to_call, error_message: str = "") -> tuple[str, int]:
         """
@@ -109,6 +121,9 @@ class Player:
     def get_action(self, game_history, legal_actions, amount_to_call):
         """
         Gets the player's action with validation. This is the main entry point.
+        
+        Returns:
+            tuple: (action, amount, is_fallback) - is_fallback=True if this was a fallback action
         """
         return self.get_action_with_validation(game_history, legal_actions, amount_to_call)
     

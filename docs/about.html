@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - LLM Poker Benchmark</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-trophy"></i> LLM Poker Benchmark</h1>
+            <nav>
+                <a href="index.html">Leaderboard</a>
+                <a href="pairwise.html">Pairwise Results</a>
+                <a href="about.html" class="active">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h2>📖 About This Benchmark</h2>
+            <p>Understanding how Large Language Models perform in strategic poker games</p>
+        </section>
+
+        <section class="content">
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3><i class="fas fa-gamepad"></i> Game Format</h3>
+                    <ul>
+                        <li><strong>Heads-up Texas Hold'em</strong> (2 players)</li>
+                        <li><strong>Starting Stack:</strong> 10,000 chips (100 BB)</li>
+                        <li><strong>Blinds:</strong> 50/100 (small/big blind)</li>
+                        <li><strong>Session Length:</strong> Up to 1,000 hands or until bust</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3><i class="fas fa-chart-line"></i> Scoring System</h3>
+                    <ul>
+                        <li><strong>Primary Metric:</strong> Average chips won per hand</li>
+                        <li><strong>Formula:</strong> (Final Stack - Starting Stack) / Hands Played</li>
+                        <li><strong>Aggregation:</strong> Average across all opponents</li>
+                        <li><strong>Quality Metric:</strong> Fallback rate (validation failures)</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3><i class="fas fa-robot"></i> LLM Integration</h3>
+                    <ul>
+                        <li><strong>Providers:</strong> OpenAI, Google, Anthropic</li>
+                        <li><strong>Input:</strong> Game state, hand, legal actions</li>
+                        <li><strong>Output:</strong> Structured action decisions</li>
+                        <li><strong>Fallbacks:</strong> Safe actions for validation errors</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3><i class="fas fa-trophy"></i> Tournament Format</h3>
+                    <ul>
+                        <li><strong>Round-robin:</strong> All LLMs play each other</li>
+                        <li><strong>Multiple Sessions:</strong> Statistical significance</li>
+                        <li><strong>Fair Comparison:</strong> Same starting conditions</li>
+                        <li><strong>Transparent Results:</strong> All data publicly available</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="methodology">
+                <h3><i class="fas fa-microscope"></i> Methodology</h3>
+                <p>
+                    This benchmark evaluates Large Language Models in a strategic, multi-round game environment 
+                    that requires decision-making under uncertainty, risk assessment, and opponent modeling. 
+                    Unlike simple Q&A benchmarks, poker provides a rich environment for testing:
+                </p>
+                <ul>
+                    <li><strong>Strategic Thinking:</strong> Long-term planning and adaptation</li>
+                    <li><strong>Risk Management:</strong> Balancing potential gains vs losses</li>
+                    <li><strong>Incomplete Information:</strong> Making decisions with hidden information</li>
+                    <li><strong>Opponent Modeling:</strong> Adapting to different playing styles</li>
+                    <li><strong>Mathematical Reasoning:</strong> Pot odds and probability calculations</li>
+                </ul>
+            </div>
+
+            <div class="technical-details">
+                <h3><i class="fas fa-cogs"></i> Technical Implementation</h3>
+                <div class="tech-grid">
+                    <div class="tech-item">
+                        <h4>Game Engine</h4>
+                        <p>Custom Texas Hold'em implementation with proper hand evaluation, betting rounds, and pot management.</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>AI Integration</h4>
+                        <p>Unified client supporting multiple providers via OpenAI-compatible APIs with structured response parsing.</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>Data Collection</h4>
+                        <p>SQLite database storing all game results, configurations, and metadata for comprehensive analysis.</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>Web Interface</h4>
+                        <p>Static GitHub Pages site with interactive leaderboards and detailed pairwise comparisons.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contributing">
+                <h3><i class="fas fa-hands-helping"></i> Contributing</h3>
+                <p>
+                    This benchmark is open source and welcomes contributions! You can help by:
+                </p>
+                <ul>
+                    <li>Adding new LLM providers or models</li>
+                    <li>Improving the game engine or evaluation metrics</li>
+                    <li>Enhancing the web interface or visualizations</li>
+                    <li>Running benchmarks and contributing results</li>
+                    <li>Reporting bugs or suggesting improvements</li>
+                </ul>
+                <p>
+                    <a href="https://github.com/edenlumbroso/poker" class="cta-button">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Last updated: <span id="last-updated">-</span></p>
+            <p>
+                <a href="https://github.com/edenlumbroso/poker" target="_blank">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="assets/js/data.js"></script>
+    <script>
+        // Set last updated time
+        document.getElementById('last-updated').textContent = window.benchmarkData?.lastUpdated || 'Unknown';
+    </script>
+</body>
+</html>

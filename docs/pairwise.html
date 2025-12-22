@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pairwise Results - LLM Poker Benchmark</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-trophy"></i> LLM Poker Benchmark</h1>
+            <nav>
+                <a href="index.html">Leaderboard</a>
+                <a href="pairwise.html" class="active">Pairwise Results</a>
+                <a href="about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h2>🎯 Head-to-Head Results</h2>
+            <p>Detailed matchup results between all LLM pairs</p>
+        </section>
+
+        <section class="controls">
+            <div class="control-group">
+                <label for="metric-select">Display Metric:</label>
+                <select id="metric-select">
+                    <option value="winnings">Average Winnings per Hand</option>
+                    <option value="winrate">Win Rate (%)</option>
+                    <option value="sessions">Number of Sessions</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="pairwise-matrix">
+            <div class="matrix-container">
+                <table id="pairwise-table" class="matrix-table">
+                    <thead id="matrix-header">
+                        <!-- Populated by JavaScript -->
+                    </thead>
+                    <tbody id="matrix-body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="matrix-legend">
+                <h4>How to Read This Matrix:</h4>
+                <ul>
+                    <li><strong>Rows:</strong> LLM being evaluated</li>
+                    <li><strong>Columns:</strong> Opponent LLM</li>
+                    <li><strong>Values:</strong> Performance of row LLM vs column LLM</li>
+                    <li><strong>Colors:</strong> 
+                        <span class="legend-positive">Green = Positive performance</span>
+                        <span class="legend-negative">Red = Negative performance</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="detailed-results">
+            <h3><i class="fas fa-list"></i> Detailed Match Results</h3>
+            <div class="filters">
+                <select id="llm-filter">
+                    <option value="">All LLMs</option>
+                </select>
+                <select id="opponent-filter">
+                    <option value="">All Opponents</option>
+                </select>
+            </div>
+            <div id="detailed-results-container">
+                <!-- Populated by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Last updated: <span id="last-updated">-</span></p>
+            <p>
+                <a href="https://github.com/edenlumbroso/poker" target="_blank">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/pairwise.js"></script>
+</body>
+</html>

@@ -40,6 +40,7 @@ class AIClient:
             provider: Provider name ('openai', 'google', 'anthropic')
             model: Model name
         """
+        self.provider = provider
         self.client = get_client(provider)
         self.model = model
     

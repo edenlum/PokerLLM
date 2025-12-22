@@ -113,7 +113,19 @@ class Game:
             legal_actions = self._get_legal_actions(player, amount_to_call)
             # Create game history for the player
             game_history = f"Current pot: {self.pot}, Community cards: {self.community_cards}"
-            action, amount = player.get_action(game_history, legal_actions, amount_to_call)
+            action, amount, is_fallback = player.get_action(game_history, legal_actions, amount_to_call)
+
+            # Log fallback actions for analysis
+            if is_fallback:
+                if not hasattr(self, 'fallback_actions'):
+                    self.fallback_actions = []
+                self.fallback_actions.append({
+                    'player': player.name,
+                    'action': action,
+                    'amount': amount,
+                    'legal_actions': legal_actions.copy(),
+                    'amount_to_call': amount_to_call
+                })
 
             amount_to_call = self._handle_player_action(player, action, amount, players_to_act, amount_to_call)
 

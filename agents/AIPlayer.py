@@ -24,15 +24,14 @@ Guidelines:
 - Think about expected value and risk management"""
 
 class AIPlayerResponse(BaseModel):
+    reasoning: str = Field(..., description="A brief strategic explanation")
     action: Literal["check", "call", "raise", "fold", "bet"] = Field(..., description="The action to take")
     amount: int = Field(0, description="The amount to bet or raise", ge=0)
-    reasoning: str = Field(..., description="A brief strategic explanation")
 
 class AIPlayer(Player):
     """AI-powered poker player that uses language models to make decisions."""
     
-    def __init__(self, name: str, stack: int, provider: str = 'openai', 
-                 model: str = None, api_key: str = None, temperature: float = 0.7):
+    def __init__(self, name: str, stack: int, provider: str, model: str):
         """
         Initialize AI player.
         
@@ -41,13 +40,10 @@ class AIPlayer(Player):
             stack: Starting chip stack
             provider: AI provider to use ('openai', 'google', 'anthropic')
             model: Specific model to use (if None, uses provider default)
-            api_key: API key (if None, reads from environment)
-            temperature: AI temperature for randomness (0.0-1.0)
         """
         super().__init__(name, stack)
         self.provider = provider
         self.model = model
-        self.temperature = temperature
         
         # Initialize AI client
         if not AI_CLIENT_AVAILABLE:

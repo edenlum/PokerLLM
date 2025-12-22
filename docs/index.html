@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Poker Benchmark - Leaderboard</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-trophy"></i> LLM Poker Benchmark</h1>
+            <nav>
+                <a href="index.html" class="active">Leaderboard</a>
+                <a href="pairwise.html">Pairwise Results</a>
+                <a href="about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h2>🏆 Current Leaderboard</h2>
+            <p>Head-to-head poker performance of Large Language Models</p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-llms">-</div>
+                    <div class="stat-label">LLMs Tested</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-sessions">-</div>
+                    <div class="stat-label">Sessions Played</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-hands">-</div>
+                    <div class="stat-label">Total Hands</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="leaderboard">
+            <div class="table-container">
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>LLM</th>
+                            <th>Avg Chips/Hand</th>
+                            <th>Total Hands</th>
+                            <th>Sessions</th>
+                            <th>Fallback Rate</th>
+                            <th>Win Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="recent-matches">
+            <h3><i class="fas fa-clock"></i> Recent Matches</h3>
+            <div id="recent-matches-container">
+                <!-- Populated by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Last updated: <span id="last-updated">-</span></p>
+            <p>
+                <a href="https://github.com/edenlumbroso/poker" target="_blank">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

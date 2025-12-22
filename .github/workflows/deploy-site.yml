@@ -1,0 +1,54 @@
+name: Deploy Benchmark Site
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'benchmark/results.db'
+      - 'benchmark/site_generator.py'
+      - 'docs/**'
+  workflow_dispatch:  # Allow manual triggering
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pydantic python-dotenv
+        
+    - name: Generate site data
+      run: |
+        cd ${{ github.workspace }}
+        python benchmark/site_generator.py --db benchmark/results.db --output docs
+        
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './docs'
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4

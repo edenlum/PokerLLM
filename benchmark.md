@@ -10,7 +10,7 @@ Unlike games with binary win/lose outcomes, poker involves:
 - Variable win amounts (small pots vs large pots)
 - Skill differences between opponents
 - Variance and luck factors
-- Different playing styles (aggressive vs conservative)
+- Different playing formats (amount in the stack, number of players)
 
 ## Proposed Scoring Systems
 
@@ -23,7 +23,7 @@ Unlike games with binary win/lose outcomes, poker involves:
 - **Tournament-style:** Convert cash game results to tournament-like rankings
 
 **Pros:** 
-- Accounts for opponent strength
+- Accounts for opponent strength    
 - Well-established rating system
 - Handles skill differences naturally
 
