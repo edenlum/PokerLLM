@@ -58,7 +58,8 @@ class Game:
 
     def _active_players_count(self):
         """Returns the number of players still in the hand."""
-        return sum(1 for p in self.players if not (p.is_folded or p.stack <= 0))
+        # All-in players (stack=0 but is_all_in=True) should still be considered active
+        return sum(1 for p in self.players if not p.is_folded)
 
     def _run_betting_rounds(self):
         """Runs all the betting rounds for a hand."""

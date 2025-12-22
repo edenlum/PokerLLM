@@ -28,7 +28,7 @@ def main():
     
     # Replace with actual player objects
     game.players[0] = HumanPlayer('You', 1000)
-    game.players[1] = ai_opponent
+    game.players[1] = HumanPlayer('Gal', 1000) # ai_opponent
     
     print(f"\nGame setup:")
     print(f"Players: {[p.name for p in game.players]}")

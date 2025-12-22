@@ -39,12 +39,14 @@ class Player:
             if amount <= 0:
                 return f"Amount must be positive for {action}"
             
-            if amount > self.stack:
-                return f"Cannot {action} {amount} - you only have {self.stack} chips"
-            
             if action == 'raise' and amount <= amount_to_call:
                 return f"Raise amount ({amount}) must be greater than amount to call ({amount_to_call})"
-                
+            
+            # Calculate actual chips needed (this is what the game will actually bet)
+            chips_needed = amount - self.current_bet
+            if chips_needed > self.stack:
+                return f"Cannot {action} to {amount} - need {chips_needed} chips but only have {self.stack}"
+            
             # Check minimum bet/raise sizes
             if action == 'bet' and amount_to_call > 0:
                 return f"Cannot bet when there's already a bet to call. Use 'raise' instead."
