@@ -60,6 +60,7 @@ class SiteGenerator:
             "leaderboard": self.get_leaderboard_data(),
             "pairwiseResults": self.get_pairwise_data(),
             "recentMatches": self.get_recent_matches_data(),
+            "handLogs": self.get_hand_logs_data(),
             "stats": self.get_stats_data()
         }
         
@@ -76,6 +77,7 @@ class SiteGenerator:
         print(f"✅ Generated {output_file}")
         print(f"   - {len(data['leaderboard'])} LLMs in leaderboard")
         print(f"   - {len(data['recentMatches'])} recent matches")
+        print(f"   - {len(data['handLogs'])} hand logs")
         print(f"   - {data['stats']['totalSessions']} total sessions")
     
     def get_leaderboard_data(self) -> List[Dict[str, Any]]:
@@ -191,6 +193,33 @@ class SiteGenerator:
             })
         
         return recent_matches
+    
+    def get_hand_logs_data(self) -> List[Dict[str, Any]]:
+        """Get hand logs data for the website."""
+        hand_logs = self.db.get_hand_logs(limit=500)  # Get recent 500 hands
+        
+        result = []
+        for hand_log in hand_logs:
+            result.append({
+                "session_id": hand_log.session_id,
+                "hand_number": hand_log.hand_number,
+                "llm1_name": hand_log.llm1_name,
+                "llm2_name": hand_log.llm2_name,
+                "llm1_hole_cards": hand_log.llm1_hole_cards,
+                "llm2_hole_cards": hand_log.llm2_hole_cards,
+                "community_cards": hand_log.community_cards,
+                "actions": hand_log.actions,
+                "pot_size": hand_log.pot_size,
+                "winner": hand_log.winner,
+                "llm1_winnings": round(hand_log.llm1_winnings, 2),
+                "llm2_winnings": round(hand_log.llm2_winnings, 2),
+                "hand_date": hand_log.hand_date,
+                "showdown": hand_log.showdown,
+                "hand_strength_llm1": hand_log.hand_strength_llm1,
+                "hand_strength_llm2": hand_log.hand_strength_llm2
+            })
+        
+        return result
     
     def get_stats_data(self) -> Dict[str, int]:
         """Get overall statistics."""

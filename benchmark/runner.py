@@ -9,7 +9,8 @@ from itertools import combinations
 
 from agents.AIPlayer import AIPlayer
 from simulator.Game import Game
-from benchmark.database import BenchmarkDatabase, GameResult
+from benchmark.database import BenchmarkDatabase, GameResult, HandLog
+from benchmark.hand_logger import HandLogger
 
 
 class BenchmarkRunner:
@@ -38,7 +39,7 @@ class BenchmarkRunner:
         print(f"✓ Registered LLM: {name} ({provider}/{model})")
     
     def run_heads_up_session(self, llm1_config: Dict, llm2_config: Dict, 
-                           max_hands: int = 1000) -> GameResult:
+                           max_hands: int = 100) -> GameResult:
         """
         Run a heads-up session between two LLMs.
         
@@ -81,6 +82,9 @@ class BenchmarkRunner:
         game = Game(players_data, small_blind=self.small_blind, big_blind=self.big_blind)
         game.players[0] = player1
         game.players[1] = player2
+        
+        # Create hand logger to capture detailed hand information
+        hand_logger = HandLogger(game)
         
         print(f"Starting stacks: {self.starting_stack} chips each")
         print(f"Blinds: {self.small_blind}/{self.big_blind}")
@@ -155,9 +159,44 @@ class BenchmarkRunner:
             llm2_fallbacks=fallback_count2
         )
         
+        # Save result and get session ID
+        session_id = self.db.save_game_result(result)
+        
+        # Save hand logs
+        self._save_hand_logs(hand_logger, session_id)
+        
         return result
     
-    def run_round_robin(self, max_hands_per_session: int = 1000) -> List[GameResult]:
+    def _save_hand_logs(self, hand_logger: HandLogger, session_id: int):
+        """Save hand logs from the hand logger to the database."""
+        
+        # Convert hand logs to database format
+        db_hands = hand_logger.to_database_format(session_id)
+        
+        # Save each hand to the database
+        for hand_data in db_hands:
+            hand_log = HandLog(
+                session_id=hand_data['session_id'],
+                hand_number=hand_data['hand_number'],
+                llm1_name=hand_data['llm1_name'],
+                llm2_name=hand_data['llm2_name'],
+                llm1_hole_cards=hand_data['llm1_hole_cards'],
+                llm2_hole_cards=hand_data['llm2_hole_cards'],
+                community_cards=hand_data['community_cards'],
+                actions=hand_data['actions'],
+                pot_size=hand_data['pot_size'],
+                winner=hand_data['winner'],
+                llm1_winnings=hand_data['llm1_winnings'],
+                llm2_winnings=hand_data['llm2_winnings'],
+                hand_date=hand_data['hand_date'],
+                showdown=hand_data['showdown'],
+                hand_strength_llm1=hand_data['hand_strength_llm1'],
+                hand_strength_llm2=hand_data['hand_strength_llm2']
+            )
+            
+            self.db.save_hand_log(hand_log)
+    
+    def run_round_robin(self, max_hands_per_session: int = 100) -> List[GameResult]:
         """
         Run round-robin tournament between all registered LLMs.
         

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand History - LLM Poker Benchmark</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-trophy"></i> LLM Poker Benchmark</h1>
+            <nav>
+                <a href="index.html">Leaderboard</a>
+                <a href="pairwise.html">Pairwise Results</a>
+                <a href="hands.html" class="active">Hand History</a>
+                <a href="about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h2>🃏 Hand History</h2>
+            <p>Detailed analysis of every poker hand played in the benchmark</p>
+        </section>
+
+        <section class="controls">
+            <div class="filter-grid">
+                <div class="control-group">
+                    <label for="llm-filter">LLM:</label>
+                    <select id="llm-filter">
+                        <option value="">All LLMs</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="session-filter">Session:</label>
+                    <select id="session-filter">
+                        <option value="">All Sessions</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="winner-filter">Winner:</label>
+                    <select id="winner-filter">
+                        <option value="">All Winners</option>
+                        <option value="llm1">Player 1</option>
+                        <option value="llm2">Player 2</option>
+                        <option value="split">Split Pot</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="showdown-filter">Showdown:</label>
+                    <select id="showdown-filter">
+                        <option value="">All Hands</option>
+                        <option value="true">Showdown Only</option>
+                        <option value="false">No Showdown</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="search-group">
+                <input type="text" id="search-input" placeholder="Search hands...">
+                <button id="search-btn"><i class="fas fa-search"></i></button>
+            </div>
+        </section>
+
+        <section class="hand-history">
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-hands">-</div>
+                    <div class="stat-label">Total Hands</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="showdown-hands">-</div>
+                    <div class="stat-label">Showdown Hands</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avg-pot">-</div>
+                    <div class="stat-label">Avg Pot Size</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="fallback-rate">-</div>
+                    <div class="stat-label">Fallback Rate</div>
+                </div>
+            </div>
+
+            <div id="hands-container">
+                <!-- Populated by JavaScript -->
+            </div>
+            
+            <div class="pagination">
+                <button id="prev-page" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+                <span id="page-info">Page 1 of 1</span>
+                <button id="next-page" disabled>Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Hand Detail Modal -->
+    <div id="hand-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Hand Details</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="hand-details">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>Last updated: <span id="last-updated">-</span></p>
+            <p>
+                <a href="https://github.com/edenlumbroso/poker" target="_blank">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/hands.js"></script>
+</body>
+</html>

@@ -26,6 +26,11 @@ def get_client(provider) -> OpenAI:
             api_key=os.getenv(f"{provider.upper()}_API_KEY"), 
             base_url="https://api.anthropic.com/v1/openai/"
         )
+    elif provider == "openrouter":
+        return OpenAI(
+            api_key=os.getenv(f"{provider.upper()}_API_KEY"), 
+            base_url="https://openrouter.ai/api/v1"
+        )
     else:
         raise ValueError(f"Invalid provider: {provider}")
 
