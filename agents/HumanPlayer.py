@@ -1,6 +1,10 @@
 from .Player import Player
 
 class HumanPlayer(Player):
+    def __init__(self, name: str, stack: int):
+        """Initialize human player."""
+        super().__init__(name, stack)
+        self._last_reasoning = "Human decision"  # Default reasoning for human players
     def get_raw_action(self, game_history: str, legal_actions: list[str], amount_to_call: int, error_message: str = "") -> tuple[str, int]:
         """
         Gets the human player's raw action input. Returns (action, amount) tuple.

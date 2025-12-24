@@ -44,6 +44,7 @@ class AIPlayer(Player):
         super().__init__(name, stack)
         self.provider = provider
         self.model = model
+        self._last_reasoning = None  # Store reasoning for hand logger
         
         # Initialize AI client
         if not AI_CLIENT_AVAILABLE:
@@ -132,4 +133,6 @@ class AIPlayer(Player):
     
     def _parse_ai_response(self, response: AIPlayerResponse) -> tuple[str, int, str]:
         """Parse AI response into action, amount, and reasoning."""
+        # Store reasoning for hand logger to access
+        self._last_reasoning = response.reasoning
         return response.action, response.amount, response.reasoning

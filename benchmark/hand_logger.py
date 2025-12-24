@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from simulator import HandEvaluator
+from simulator.HandEvaluator import HandRank
 
 
 class HandLogger:
@@ -188,26 +189,15 @@ class HandLogger:
                 if len(all_cards) >= 5:
                     hand_rank, tiebreaker = HandEvaluator.evaluate_hand(all_cards)
                     
-                    # Convert hand rank to readable string
-                    hand_names = [
-                        'high_card', 'pair', 'two_pair', 'three_of_a_kind',
-                        'straight', 'flush', 'full_house', 'four_of_a_kind',
-                        'straight_flush', 'royal_flush'
-                    ]
-                    
-                    if 0 <= hand_rank < len(hand_names):
-                        strength = hand_names[hand_rank]
-                    else:
-                        strength = f'rank_{hand_rank}'
-                    
                     hand_strengths[player.name] = {
-                        'strength': strength,
-                        'rank': hand_rank,
+                        'strength': str(hand_rank),
+                        'rank': hand_rank.value,
+                        'rank_enum': hand_rank.name,
                         'tiebreaker': tiebreaker
                     }
                 else:
                     hand_strengths[player.name] = 'incomplete'
-            except Exception:
+            except Exception as e:
                 hand_strengths[player.name] = 'unknown'
         
         self.current_hand['hand_strengths'] = hand_strengths
