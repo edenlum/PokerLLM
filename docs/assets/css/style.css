@@ -930,6 +930,45 @@ footer a:hover {
     color: #6c757d;
 }
 
+.timeline-reasoning {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(103, 126, 234, 0.1);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #495057;
+    border-left: 3px solid #667eea;
+}
+
+.timeline-reasoning i {
+    color: #667eea;
+    margin-right: 0.5rem;
+}
+
+.betting-round-separator {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    text-align: center;
+    color: white;
+}
+
+.betting-round-separator h5 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.round-cards {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
 /* Card Styling */
 .card {
     display: inline-block;

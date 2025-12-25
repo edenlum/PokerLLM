@@ -6,6 +6,8 @@ import json
 from datetime import datetime
 from typing import List, Tuple, Dict
 from itertools import combinations
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import os
 
 from agents.AIPlayer import AIPlayer
 from simulator.Game import Game
@@ -196,22 +198,97 @@ class BenchmarkRunner:
             
             self.db.save_hand_log(hand_log)
     
-    def run_round_robin(self, max_hands_per_session: int = 100) -> List[GameResult]:
+    def run_round_robin(self, max_hands_per_session: int = 100, parallel: bool = True, max_workers: int = None) -> List[GameResult]:
         """
         Run round-robin tournament between all registered LLMs.
         
         Args:
             max_hands_per_session: Maximum hands per heads-up session
+            parallel: Whether to run sessions in parallel (default: True)
+            max_workers: Maximum number of parallel workers (default: CPU count)
             
         Returns:
             List of all game results
         """
+        if parallel:
+            return self._run_round_robin_parallel(max_hands_per_session, max_workers)
+        else:
+            return self._run_round_robin_sequential(max_hands_per_session)
+    
+    def _run_round_robin_parallel(self, max_hands_per_session: int, max_workers: int = None) -> List[GameResult]:
+        """Run round-robin tournament in parallel."""
         llms = self.db.get_registered_llms()
         
         if len(llms) < 2:
             raise ValueError("Need at least 2 LLMs registered for round-robin")
         
-        print(f"\n🏆 Starting round-robin tournament with {len(llms)} LLMs")
+        # Determine number of workers
+        if max_workers is None:
+            max_workers = min(os.cpu_count() or 4, 8)  # Cap at 8 to avoid overwhelming APIs
+        
+        print(f"\n🏆 Starting parallel round-robin tournament with {len(llms)} LLMs")
+        print(f"🚀 Using {max_workers} parallel workers")
+        print(f"LLMs: {[llm['name'] for llm in llms]}")
+        
+        # Generate all unique pairs
+        pairs = list(combinations(llms, 2))
+        total_sessions = len(pairs)
+        
+        print(f"📊 Total sessions to run: {total_sessions}")
+        
+        results = []
+        completed_sessions = 0
+        
+        # Run sessions in parallel
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all sessions
+            future_to_pair = {}
+            for llm1, llm2 in pairs:
+                # Convert DB config to dict format
+                llm1_config = {
+                    'name': llm1['name'],
+                    'provider': llm1['provider'],
+                    'model': llm1['model'],
+                    'temperature': llm1['temperature'],
+                    **json.loads(llm1['config_json'])
+                }
+                
+                llm2_config = {
+                    'name': llm2['name'],
+                    'provider': llm2['provider'],
+                    'model': llm2['model'],
+                    'temperature': llm2['temperature'],
+                    **json.loads(llm2['config_json'])
+                }
+                
+                future = executor.submit(self._run_single_session, llm1_config, llm2_config, max_hands_per_session)
+                future_to_pair[future] = (llm1['name'], llm2['name'])
+            
+            # Collect results as they complete
+            for future in as_completed(future_to_pair):
+                llm1_name, llm2_name = future_to_pair[future]
+                completed_sessions += 1
+                
+                try:
+                    result = future.result()
+                    results.append(result)
+                    print(f"✅ [{completed_sessions}/{total_sessions}] {llm1_name} vs {llm2_name} completed")
+                    
+                except Exception as e:
+                    print(f"❌ [{completed_sessions}/{total_sessions}] {llm1_name} vs {llm2_name} failed: {e}")
+                    continue
+        
+        print(f"\n🎉 Parallel round-robin completed! {len(results)}/{total_sessions} sessions successful.")
+        return results
+    
+    def _run_round_robin_sequential(self, max_hands_per_session: int) -> List[GameResult]:
+        """Run round-robin tournament sequentially (original implementation)."""
+        llms = self.db.get_registered_llms()
+        
+        if len(llms) < 2:
+            raise ValueError("Need at least 2 LLMs registered for round-robin")
+        
+        print(f"\n🏆 Starting sequential round-robin tournament with {len(llms)} LLMs")
         print(f"LLMs: {[llm['name'] for llm in llms]}")
         
         results = []
@@ -241,20 +318,24 @@ class BenchmarkRunner:
             }
             
             try:
-                result = self.run_heads_up_session(llm1_config, llm2_config, max_hands_per_session)
-                
-                # Save to database
-                result_id = self.db.save_game_result(result)
-                print(f"✓ Saved result to database (ID: {result_id})")
-                
+                result = self._run_single_session(llm1_config, llm2_config, max_hands_per_session)
                 results.append(result)
                 
             except Exception as e:
                 print(f"❌ Session failed: {e}")
                 continue
         
-        print(f"\n🎉 Round-robin completed! {len(results)} sessions played.")
+        print(f"\n🎉 Sequential round-robin completed! {len(results)} sessions played.")
         return results
+    
+    def _run_single_session(self, llm1_config: Dict, llm2_config: Dict, max_hands_per_session: int) -> GameResult:
+        """Run a single heads-up session and save to database."""
+        result = self.run_heads_up_session(llm1_config, llm2_config, max_hands_per_session)
+        
+        # Save to database
+        result_id = self.db.save_game_result(result)
+        
+        return result
     
     def get_leaderboard(self) -> List[Tuple[str, float, int, int, float]]:
         """

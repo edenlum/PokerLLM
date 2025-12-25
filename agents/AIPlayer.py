@@ -12,15 +12,9 @@ except ImportError:
 
 SYSTEM_PROMPT = """You are an expert Texas Hold'em poker player. Analyze the situation and make the optimal decision.
 
-Respond in this exact format:
-ACTION: [action] [amount if applicable]
-REASONING: [brief strategic explanation]
-
 Guidelines:
 - Consider hand strength, position, pot odds, and opponent behavior
-- Be aggressive with strong hands, conservative with weak hands
 - Only use actions from the legal actions list
-- For bet/raise, specify amount after action (e.g., "raise 50")
 - Think about expected value and risk management"""
 
 class AIPlayerResponse(BaseModel):

@@ -90,8 +90,17 @@ def cmd_run_tournament(args):
     """Run a round-robin tournament between all registered LLMs."""
     runner = BenchmarkRunner(args.db)
     
+    # Determine if running in parallel
+    parallel = args.parallel and not args.sequential
+    
     try:
-        results = runner.run_round_robin(args.hands)
+        if parallel:
+            print(f"🚀 Running tournament in parallel mode...")
+            results = runner.run_round_robin(args.hands, parallel=True, max_workers=args.workers)
+        else:
+            print(f"🐌 Running tournament in sequential mode...")
+            results = runner.run_round_robin(args.hands, parallel=False)
+            
         print(f"\n✓ Tournament completed with {len(results)} sessions!")
         
         # Show leaderboard
@@ -195,6 +204,9 @@ def main():
     # Run tournament command
     tournament_parser = subparsers.add_parser("run-tournament", help="Run round-robin tournament")
     tournament_parser.add_argument("--hands", type=int, default=1000, help="Max hands per session (default: 1000)")
+    tournament_parser.add_argument("--parallel", action="store_true", default=True, help="Run sessions in parallel (default: True)")
+    tournament_parser.add_argument("--sequential", action="store_true", help="Run sessions sequentially (overrides --parallel)")
+    tournament_parser.add_argument("--workers", type=int, help="Number of parallel workers (default: auto)")
     tournament_parser.set_defaults(func=cmd_run_tournament)
     
     # Leaderboard command

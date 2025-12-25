@@ -321,18 +321,56 @@ function createActionTimeline(actions) {
         return '<p>No actions recorded for this hand.</p>';
     }
     
-    return actions.map(action => `
-        <div class="timeline-item ${action.is_fallback ? 'fallback' : ''}">
-            <div class="timeline-player">${action.player}</div>
-            <div class="timeline-action">
-                ${action.action}${action.amount > 0 ? ` ${action.amount}` : ''}
-                ${action.is_fallback ? ' <i class="fas fa-exclamation-triangle" title="Fallback action"></i>' : ''}
+    let timeline = '';
+    let currentRound = '';
+    
+    actions.forEach((action, index) => {
+        // Determine betting round based on community cards
+        const communityCards = action.game_state?.community_cards || [];
+        let round = '';
+        
+        if (communityCards.length === 0) {
+            round = 'Pre-Flop';
+        } else if (communityCards.length === 3) {
+            round = 'Flop';
+        } else if (communityCards.length === 4) {
+            round = 'Turn';
+        } else if (communityCards.length === 5) {
+            round = 'River';
+        }
+        
+        // Add round separator if round changed
+        if (round !== currentRound && round !== '') {
+            timeline += `
+                <div class="betting-round-separator">
+                    <h5>${round}</h5>
+                    ${communityCards.length > 0 ? `<div class="round-cards">${communityCards.join(' ')}</div>` : ''}
+                </div>
+            `;
+            currentRound = round;
+        }
+        
+        // Add action item
+        timeline += `
+            <div class="timeline-item ${action.is_fallback ? 'fallback' : ''}">
+                <div class="timeline-player">${action.player}</div>
+                <div class="timeline-action">
+                    ${action.action}${action.amount > 0 ? ` ${action.amount}` : ''}
+                    ${action.is_fallback ? ' <i class="fas fa-exclamation-triangle" title="Fallback action"></i>' : ''}
+                </div>
+                <div class="timeline-result">
+                    Stack: ${action.game_state?.player_stack || 'N/A'} | Pot: ${action.game_state?.pot || 'N/A'}
+                </div>
+                ${action.reasoning ? `
+                    <div class="timeline-reasoning">
+                        <i class="fas fa-brain"></i> ${action.reasoning}
+                    </div>
+                ` : ''}
             </div>
-            <div class="timeline-result">
-                Stack: ${action.stack_after} | Pot: ${action.pot_after}
-            </div>
-        </div>
-    `).join('');
+        `;
+    });
+    
+    return timeline;
 }
 
 function getWinnerName(hand) {
