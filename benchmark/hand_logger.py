@@ -39,9 +39,9 @@ class HandLogger:
         """Wrap game methods to capture hand information."""
         
         # Wrap run_hand to capture hand start/end
-        def wrapped_run_hand():
+        def wrapped_run_hand(seed=None):
             self._start_hand()
-            result = self._original_run_hand()
+            result = self._original_run_hand(seed=seed)
             self._end_hand()
             return result
         

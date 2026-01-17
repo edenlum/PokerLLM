@@ -3,6 +3,7 @@ Benchmark runner for heads-up poker games between LLMs.
 """
 
 import json
+import random
 from datetime import datetime
 from typing import List, Tuple, Dict
 from itertools import combinations
@@ -90,6 +91,7 @@ class BenchmarkRunner:
         
         print(f"Starting stacks: {self.starting_stack} chips each")
         print(f"Blinds: {self.small_blind}/{self.big_blind}")
+        print("🔄 Using duplicate hands with swapped players to eliminate card distribution variance")
         
         # Play hands until max_hands or someone busts
         while hands_played < max_hands:
@@ -104,13 +106,36 @@ class BenchmarkRunner:
                 print(f"⚠️  Low stack detected ({min_stack} chips), continuing...")
             
             try:
-                # Play one hand
-                game.run_hand()
+                # Play hand twice with same seed (dealer position increment swaps positions automatically)
+                hand_seed = random.randint(0, 2**31 - 1)
+                
+                # Save stacks before first play
+                stack_before_p1 = player1.stack
+                stack_before_p2 = player2.stack
+                
+                # First play: normal
+                game.run_hand(seed=hand_seed)
+                winnings1_first = player1.stack - stack_before_p1
+                winnings2_first = player2.stack - stack_before_p2
+                
+                # Reset stacks for second play
+                player1.stack = stack_before_p1
+                player2.stack = stack_before_p2
+                
+                # Second play: same seed (dealer position will increment, swapping positions)
+                game.run_hand(seed=hand_seed)
+                winnings1_second = player1.stack - stack_before_p1
+                winnings2_second = player2.stack - stack_before_p2
+                
+                # Average the winnings (eliminates card distribution variance)
+                player1.stack = stack_before_p1 + (winnings1_first + winnings1_second) / 2
+                player2.stack = stack_before_p2 + (winnings2_first + winnings2_second) / 2
+                
                 hands_played += 1
                 
                 # Progress update every 50 hands
                 if hands_played % 50 == 0:
-                    print(f"Hand {hands_played}: {player1.name}={player1.stack}, {player2.name}={player2.stack}")
+                    print(f"Hand {hands_played}: {player1.name}={player1.stack:.0f}, {player2.name}={player2.stack:.0f}")
                 
             except Exception as e:
                 print(f"❌ Error in hand {hands_played + 1}: {e}")
@@ -330,11 +355,8 @@ class BenchmarkRunner:
     
     def _run_single_session(self, llm1_config: Dict, llm2_config: Dict, max_hands_per_session: int) -> GameResult:
         """Run a single heads-up session and save to database."""
+        # run_heads_up_session already saves to database
         result = self.run_heads_up_session(llm1_config, llm2_config, max_hands_per_session)
-        
-        # Save to database
-        result_id = self.db.save_game_result(result)
-        
         return result
     
     def get_leaderboard(self) -> List[Tuple[str, float, int, int, float]]:

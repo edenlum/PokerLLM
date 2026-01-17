@@ -13,9 +13,13 @@ class Game:
         self.big_blind = big_blind
         self.dealer_pos = 0
 
-    def run_hand(self):
-        """Runs a single hand of poker."""
-        self._setup_hand()
+    def run_hand(self, seed=None):
+        """Runs a single hand of poker.
+        
+        Args:
+            seed: Optional random seed for deck shuffle (for replaying hands)
+        """
+        self._setup_hand(seed=seed)
         self._run_betting_rounds()
         
         # Award pot if there are still active players (showdown scenario)
@@ -24,15 +28,20 @@ class Game:
             self._handle_showdown()
         elif len(active_players) == 1 and self.pot > 0:
             self._award_pot_to_winner()
-
-    def _setup_hand(self):
-        """Initializes a new hand."""
+    
+    def _setup_hand(self, seed=None):
+        """Initializes a new hand.
+        
+        Args:
+            seed: Optional random seed for deck shuffle
+        """
         self.pot = 0
         self.community_cards = []
         for player in self.players:
             player.reset_for_new_hand()
+        
         self.deck = Deck()
-        self.deck.shuffle()
+        self.deck.shuffle(seed=seed)
         self.dealer_pos = (self.dealer_pos + 1) % len(self.players)
         self._post_blinds()
         self._deal_hole_cards()

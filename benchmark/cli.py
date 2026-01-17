@@ -224,6 +224,18 @@ def main():
     site_parser.add_argument("--output", default="docs", help="Output directory (default: docs)")
     site_parser.set_defaults(func=cmd_generate_site)
     
+    # Debug command
+    debug_parser = subparsers.add_parser("debug-llm", help="Debug LLM validation issues")
+    debug_parser.add_argument("llm_name", help="Name of LLM to debug")
+    debug_parser.add_argument("--hands", type=int, default=5, help="Number of hands to test (default: 5)")
+    debug_parser.add_argument("--verbose", action="store_true", help="Show detailed validation steps")
+    debug_parser.set_defaults(func=cmd_debug_llm)
+    
+    # Clear results command
+    clear_parser = subparsers.add_parser("clear-results", help="Clear all benchmark results")
+    clear_parser.add_argument("--confirm", action="store_true", help="Confirm deletion (required)")
+    clear_parser.set_defaults(func=cmd_clear_results)
+    
     args = parser.parse_args()
     
     if not args.command:
@@ -231,6 +243,159 @@ def main():
         return
     
     args.func(args)
+
+
+def cmd_debug_llm(args):
+    """Debug LLM validation issues by running test hands."""
+    from benchmark.database import BenchmarkDatabase
+    from agents.AIPlayer import AIPlayer
+    from agents.Player import Player
+    from simulator.Game import Game
+    import json
+    
+    db = BenchmarkDatabase(args.db)
+    
+    # Get LLM config
+    llms = db.get_registered_llms()
+    target_llm = None
+    for llm in llms:
+        if llm['name'] == args.llm_name:
+            target_llm = llm
+            break
+    
+    if not target_llm:
+        print(f"❌ LLM '{args.llm_name}' not found. Available LLMs:")
+        for llm in llms:
+            print(f"   - {llm['name']}")
+        return
+    
+    print(f"\n🔍 Debugging {args.llm_name}")
+    print(f"Provider: {target_llm['provider']}")
+    print(f"Model: {target_llm['model']}")
+    print(f"Temperature: {target_llm['temperature']}")
+    
+    # Create AI player
+    try:
+        ai_player = AIPlayer(
+            name=target_llm['name'],
+            stack=10000,
+            provider=target_llm['provider'],
+            model=target_llm['model']
+        )
+        ai_player.temperature = target_llm['temperature']
+    except Exception as e:
+        print(f"❌ Failed to create AI player: {e}")
+        return
+    
+    # Run test scenarios
+    print(f"\n🎯 Running {args.hands} test scenarios...")
+    
+    total_fallbacks = 0
+    validation_issues = []
+    
+    test_scenarios = [
+        {"legal_actions": ["fold", "call"], "amount_to_call": 100, "description": "Facing a bet"},
+        {"legal_actions": ["check", "bet"], "amount_to_call": 0, "description": "First to act"},
+        {"legal_actions": ["fold", "call", "raise"], "amount_to_call": 200, "description": "Facing a raise"},
+        {"legal_actions": ["fold", "call", "raise"], "amount_to_call": 500, "description": "Facing large bet"},
+        {"legal_actions": ["check", "bet"], "amount_to_call": 0, "description": "Post-flop action"},
+    ]
+    
+    for hand_num in range(args.hands):
+        print(f"\n--- Test {hand_num + 1} ---")
+        
+        # Reset player
+        ai_player.reset_for_new_hand()
+        ai_player.stack = 10000
+        ai_player.current_bet = 0
+        
+        scenario = test_scenarios[hand_num % len(test_scenarios)]
+        
+        print(f"Scenario: {scenario['description']}")
+        print(f"Legal actions: {scenario['legal_actions']}")
+        print(f"Amount to call: {scenario['amount_to_call']}")
+        
+        # Test the AI's action
+        game_history = f"Test scenario {hand_num + 1}. Pot: 150. Community: []"
+        
+        try:
+            action, amount, is_fallback = ai_player.get_action(
+                game_history=game_history,
+                legal_actions=scenario['legal_actions'],
+                amount_to_call=scenario['amount_to_call'],
+                debug=args.verbose
+            )
+            
+            if is_fallback:
+                total_fallbacks += 1
+                print(f"❌ Fallback used: {action}")
+                
+                # Get validation failure details
+                failure_summary = ai_player.get_validation_failure_summary()
+                if failure_summary['recent_failure']:
+                    validation_issues.append({
+                        'test': hand_num + 1,
+                        'scenario': scenario['description'],
+                        'failure': failure_summary['recent_failure']
+                    })
+            else:
+                print(f"✅ Valid action: {action} {amount}")
+                
+        except Exception as e:
+            print(f"💥 Exception: {e}")
+            total_fallbacks += 1
+    
+    # Print summary
+    print(f"\n📊 Debug Summary for {args.llm_name}")
+    print(f"=" * 50)
+    print(f"Total tests: {args.hands}")
+    print(f"Fallbacks used: {total_fallbacks}")
+    print(f"Fallback rate: {(total_fallbacks/args.hands)*100:.1f}%")
+    
+    if validation_issues:
+        print(f"\n🔍 Validation Issues Found:")
+        
+        # Analyze error patterns
+        error_patterns = {}
+        for issue in validation_issues:
+            for error in issue['failure']['errors']:
+                error_type = error['error']
+                error_patterns[error_type] = error_patterns.get(error_type, 0) + 1
+        
+        for error, count in sorted(error_patterns.items(), key=lambda x: x[1], reverse=True):
+            print(f"   {count}x: {error}")
+    
+    # Get overall validation summary
+    failure_summary = ai_player.get_validation_failure_summary()
+    if failure_summary['total_failures'] > 0:
+        print(f"\n📈 Overall Validation Stats:")
+        print(f"   Total validation failures: {failure_summary['total_failures']}")
+        print(f"   Total attempts made: {failure_summary['total_attempts']}")
+        
+        if failure_summary['common_errors']:
+            print(f"\n🚨 Most Common Errors:")
+            for error, count in failure_summary['common_errors']:
+                print(f"   {count}x: {error}")
+    
+    print(f"\n💡 Debugging Tips:")
+    print(f"   - Use --verbose flag for detailed validation steps")
+    print(f"   - Check if the LLM is following the expected response format")
+    print(f"   - Verify API keys and model availability")
+    print(f"   - Consider adjusting temperature or prompt engineering")
+
+
+def cmd_clear_results(args):
+    """Clear all benchmark results from the database."""
+    from benchmark.database import BenchmarkDatabase
+    
+    if not args.confirm:
+        print("❌ This will delete all benchmark results!")
+        print("   Use --confirm flag to proceed.")
+        return
+    
+    db = BenchmarkDatabase(args.db)
+    db.clear_results(confirm=True)
+    print("✓ All benchmark results cleared.")
 
 
 if __name__ == "__main__":
