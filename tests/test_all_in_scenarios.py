@@ -71,6 +71,8 @@ class TestAllInScenarios(unittest.TestCase):
         small_stack = game.players[0]
         big_stack = game.players[1]
         
+        # Initialize action_history before posting blinds
+        game.action_history = []
         # Post blinds first to get accurate remaining chips
         game._post_blinds()
         
@@ -94,6 +96,8 @@ class TestAllInScenarios(unittest.TestCase):
         players_data = [('Player1', 50), ('Player2', 75), ('Player3', 100)]
         game = Game(players_data, small_blind=5, big_blind=10)
         
+        # Initialize action_history before posting blinds
+        game.action_history = []
         # Post blinds first
         game._post_blinds()
         
@@ -159,6 +163,8 @@ class TestAllInScenarios(unittest.TestCase):
         players_data = [('Short', 20), ('Medium', 50), ('Long', 100)]
         game = Game(players_data, small_blind=5, big_blind=10)
         
+        # Initialize action_history before posting blinds
+        game.action_history = []
         # Post blinds first
         game._post_blinds()
         

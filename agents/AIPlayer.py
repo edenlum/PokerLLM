@@ -20,7 +20,7 @@ Guidelines:
 class AIPlayerResponse(BaseModel):
     reasoning: str = Field(..., description="A brief strategic explanation")
     action: Literal["check", "call", "raise", "fold", "bet"] = Field(..., description="The action to take")
-    amount: int = Field(0, description="The amount to bet or raise", ge=0)
+    amount: int = Field(0, description="The amount to bet or raise")
 
 class AIPlayer(Player):
     """AI-powered poker player that uses language models to make decisions."""
@@ -46,7 +46,7 @@ class AIPlayer(Player):
             self.ai_client = None
         else:
             try:
-                self.ai_client = AIClient(provider=provider, model=model)
+                self.ai_client = AIClient(provider=provider, model=model, log_file=f"logs/{name}.log")
             except Exception as e:
                 print(f"Warning: Failed to initialize AI client: {e}")
                 raise e
@@ -100,29 +100,17 @@ class AIPlayer(Player):
         return SYSTEM_PROMPT
     
     def _create_ai_prompt(self, game_history: str, legal_actions: list, amount_to_call: int, error_message: str = "") -> str:
-        """Create detailed prompt for AI decision."""
-        prompt_parts = [
-            "=== POKER SITUATION ===",
-            f"Your name: {self.name}",
-            f"Your hand: {self.hand}",
-            f"Your stack: {self.stack} chips",
-            f"Current bet in pot: {self.current_bet} chips",
-            f"Amount to call: {amount_to_call} chips",
-            f"Legal actions: {', '.join(legal_actions)}",
-            "",
-            "=== GAME HISTORY ===",
-            game_history,
-        ]
+        """Create prompt for AI decision."""
+        prompt_parts = [game_history]
         
         if error_message:
             prompt_parts.extend([
                 "",
-                f"=== PREVIOUS ERROR ===",
-                f"Your last action was invalid: {error_message}",
+                f"ERROR: Your last action was invalid: {error_message}",
                 "Please choose a valid action this time.",
             ])
         
-        prompt_parts.append("\nWhat is your optimal action? Respond in the specified format.")
+        prompt_parts.append("\nRespond in the specified format.")
         return "\n".join(prompt_parts)
     
     def _parse_ai_response(self, response: AIPlayerResponse) -> tuple[str, int, str]:

@@ -107,7 +107,7 @@ class BenchmarkRunner:
             
             try:
                 # Play hand twice with same seed (dealer position increment swaps positions automatically)
-                hand_seed = random.randint(0, 2**31 - 1)
+                hand_seed = hands_played  # Use hands_played as deterministic, incremental seed
                 
                 # Save stacks before first play
                 stack_before_p1 = player1.stack
@@ -366,6 +366,7 @@ class BenchmarkRunner:
         Returns:
             List of (llm_name, avg_winnings_per_hand, total_hands, num_sessions, fallback_rate)
         """
+        import json
         all_results = self.db.get_all_results()
         
         # Aggregate results by LLM
@@ -374,7 +375,7 @@ class BenchmarkRunner:
         for result in all_results:
             # Add stats for LLM1
             if result.llm1_name not in llm_stats:
-                llm_stats[result.llm1_name] = {'total_winnings': 0, 'total_hands': 0, 'sessions': 0, 'total_fallbacks': 0}
+                llm_stats[result.llm1_name] = {'total_winnings': 0, 'total_hands': 0, 'sessions': 0, 'total_fallbacks': 0, 'total_actions': 0}
             
             llm_stats[result.llm1_name]['total_winnings'] += result.llm1_winnings
             llm_stats[result.llm1_name]['total_hands'] += result.hands_played
@@ -384,7 +385,7 @@ class BenchmarkRunner:
             
             # Add stats for LLM2
             if result.llm2_name not in llm_stats:
-                llm_stats[result.llm2_name] = {'total_winnings': 0, 'total_hands': 0, 'sessions': 0, 'total_fallbacks': 0}
+                llm_stats[result.llm2_name] = {'total_winnings': 0, 'total_hands': 0, 'sessions': 0, 'total_fallbacks': 0, 'total_actions': 0}
             
             llm_stats[result.llm2_name]['total_winnings'] += result.llm2_winnings
             llm_stats[result.llm2_name]['total_hands'] += result.hands_played
@@ -392,12 +393,33 @@ class BenchmarkRunner:
             if hasattr(result, 'llm2_fallbacks'):
                 llm_stats[result.llm2_name]['total_fallbacks'] += result.llm2_fallbacks
         
+        # Calculate total actions from hand logs for each LLM
+        all_hand_logs = self.db.get_hand_logs(limit=10000)  # Get all hand logs
+        for hand_log in all_hand_logs:
+            try:
+                actions = json.loads(hand_log.actions)
+                # Count actions for each LLM
+                for action in actions:
+                    player_name = action.get('player', '')
+                    if player_name == hand_log.llm1_name:
+                        if hand_log.llm1_name in llm_stats:
+                            llm_stats[hand_log.llm1_name]['total_actions'] += 1
+                    elif player_name == hand_log.llm2_name:
+                        if hand_log.llm2_name in llm_stats:
+                            llm_stats[hand_log.llm2_name]['total_actions'] += 1
+            except (json.JSONDecodeError, KeyError):
+                continue
+        
         # Calculate average winnings per hand and fallback rate
         leaderboard = []
         for llm_name, stats in llm_stats.items():
             if stats['total_hands'] > 0:
                 avg_winnings_per_hand = stats['total_winnings'] / stats['total_hands']
-                fallback_rate = (stats['total_fallbacks'] / stats['total_hands']) * 100  # Percentage
+                # Calculate fallback rate as percentage of actions, not hands
+                if stats['total_actions'] > 0:
+                    fallback_rate = (stats['total_fallbacks'] / stats['total_actions']) * 100
+                else:
+                    fallback_rate = 0.0
                 leaderboard.append((
                     llm_name,
                     avg_winnings_per_hand,

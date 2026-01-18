@@ -301,6 +301,16 @@ def cmd_debug_llm(args):
         {"legal_actions": ["check", "bet"], "amount_to_call": 0, "description": "Post-flop action"},
     ]
     
+    # Sample hole cards for testing (different for each scenario)
+    from simulator.Card import Card
+    sample_hands = [
+        [Card('♠', 'A'), Card('♠', 'K')],  # Strong hand
+        [Card('♥', 'Q'), Card('♥', 'J')],  # Good hand
+        [Card('♦', '9'), Card('♦', '8')],  # Medium hand
+        [Card('♣', '7'), Card('♣', '6')],  # Weak hand
+        [Card('♠', '2'), Card('♥', '3')],  # Very weak hand
+    ]
+    
     for hand_num in range(args.hands):
         print(f"\n--- Test {hand_num + 1} ---")
         
@@ -309,11 +319,15 @@ def cmd_debug_llm(args):
         ai_player.stack = 10000
         ai_player.current_bet = 0
         
+        # Set sample hole cards for this test
+        ai_player.hand = sample_hands[hand_num % len(sample_hands)].copy()
+        
         scenario = test_scenarios[hand_num % len(test_scenarios)]
         
         print(f"Scenario: {scenario['description']}")
         print(f"Legal actions: {scenario['legal_actions']}")
         print(f"Amount to call: {scenario['amount_to_call']}")
+        print(f"Hole cards: {ai_player.hand}")
         
         # Test the AI's action
         game_history = f"Test scenario {hand_num + 1}. Pot: 150. Community: []"

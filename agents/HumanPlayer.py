@@ -38,6 +38,9 @@ class HumanPlayer(Player):
                     amount = int(parts[1])
                 except ValueError:
                     raise ValueError("Amount must be a number.")
+            elif action == 'call':
+                # For 'call', use amount_to_call
+                amount = amount_to_call
             else:
                 amount = 0
             

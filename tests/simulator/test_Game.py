@@ -32,7 +32,7 @@ class TestGame(unittest.TestCase):
         game.players[1].scripted_actions = [('fold', 0)]
         game.players[2].scripted_actions = [('fold', 0)]
 
-        game._run_betting_round()
+        game._run_betting_round('Preflop')
 
         # Alice (BB) should win the pot
         self.assertEqual(game.players[0].stack, 1005) # 1000 - 10 (bb) + 15 (pot)
@@ -48,7 +48,7 @@ class TestGame(unittest.TestCase):
         game.players[1].scripted_actions = [('call', 0)]
         game.players[2].scripted_actions = [('call', 0)]
         game.players[0].scripted_actions = [('check', 0)]
-        game._run_betting_round()
+        game._run_betting_round('Preflop')
 
         game._deal_community_cards(3)
 
@@ -56,7 +56,7 @@ class TestGame(unittest.TestCase):
         game.players[1].scripted_actions = [('check', 0)]
         game.players[2].scripted_actions = [('check', 0)]
         game.players[0].scripted_actions = [('check', 0)]
-        game._run_betting_round()
+        game._run_betting_round('Flop')
 
         self.assertEqual(game.pot, 30)
 
@@ -71,7 +71,7 @@ class TestGame(unittest.TestCase):
         game.players[0].scripted_actions = [('call', 0)]
         game.players[1].scripted_actions.append(('call', 0))
 
-        game._run_betting_round()
+        game._run_betting_round('Preflop')
 
         self.assertEqual(game.pot, 90)
         self.assertEqual(game.players[0].stack, 970)
@@ -87,7 +87,7 @@ class TestGame(unittest.TestCase):
         game.players[1].scripted_actions = [('call', 0)]
         game.players[2].scripted_actions = [('call', 0)]
         game.players[0].scripted_actions = [('check', 0)]
-        game._run_betting_round()
+        game._run_betting_round('Preflop')
 
         # Deal flop
         game._deal_community_cards(3)

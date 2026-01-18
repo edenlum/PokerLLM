@@ -6,21 +6,21 @@ def main():
     print("=== Poker Game: You vs OpenAI Bot ===\n")
     
     # Create AI opponent
-    try:
-        ai_opponent = AIPlayer(
-            name="GPT-Bot", 
-            stack=1000, 
-            provider='google',
-            model='gemini-2.5-flash',
-            temperature=0.7
-        )
-        print(f"✓ Created AI opponent: {ai_opponent.name}")
-    except Exception as e:
-        print(f"✗ Failed to create AI opponent: {e}")
-        print("Make sure you have:")
-        print("1. Installed dependencies: pip install openai python-dotenv")
-        print("2. Set API key: export OPENAI_API_KEY='your-key-here'")
-        return
+    # try:
+    #     ai_opponent = AIPlayer(
+    #         name="GPT-Bot", 
+    #         stack=1000, 
+    #         provider='google',
+    #         model='gemini-2.5-flash',
+    #         temperature=0.7
+    #     )
+    #     print(f"✓ Created AI opponent: {ai_opponent.name}")
+    # except Exception as e:
+    #     print(f"✗ Failed to create AI opponent: {e}")
+    #     print("Make sure you have:")
+    #     print("1. Installed dependencies: pip install openai python-dotenv")
+    #     print("2. Set API key: export OPENAI_API_KEY='your-key-here'")
+    #     return
     
     # Set up game with you vs AI
     players_data = [('You', 1000), ('GPT-Bot', 1000)]

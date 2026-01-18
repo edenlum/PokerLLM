@@ -47,10 +47,13 @@ class Player:
             if action == 'bet' and amount_to_call > 0:
                 return "Cannot bet when there's already a bet to call. Use 'raise' instead."
         
-        elif action in ['call', 'check', 'fold']:
+        elif action in ['check', 'fold']:
             # These actions should have amount = 0
             if amount != 0:
                 return f"Action '{action}' should not have an amount"
+        elif action == 'call':
+            if amount != amount_to_call-self.current_bet and amount != 0:
+                return f"Call with {amount} is invalid. You should call with 0 or {amount_to_call-self.current_bet}"
         
         return ""  # Valid action
 
@@ -165,6 +168,9 @@ class Player:
         # Handle scripted actions for testing
         if self.scripted_actions:
             action, amount = self.scripted_actions.pop(0)
+            # For 'call' action, use amount_to_call instead of scripted amount
+            if action == 'call':
+                amount = amount_to_call
             return action, amount
         
         # This should be overridden by subclasses for real players
