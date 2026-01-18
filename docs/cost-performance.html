@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost vs Performance - LLM Poker Benchmark</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-trophy"></i> LLM Poker Benchmark</h1>
+            <nav>
+                <a href="index.html">Leaderboard</a>
+                <a href="pairwise.html">Pairwise Results</a>
+                <a href="hands.html">Hand History</a>
+                <a href="cost-performance.html" class="active">Cost vs Performance</a>
+                <a href="about.html">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h2>💰 Cost vs Performance Analysis</h2>
+            <p>Compare LLM performance (average chips per hand) against API costs from OpenRouter</p>
+        </section>
+
+        <section class="controls">
+            <div class="control-group">
+                <label for="cost-metric-select">Cost Metric:</label>
+                <select id="cost-metric-select">
+                    <option value="input">Input Cost (per 1M tokens)</option>
+                    <option value="output">Output Cost (per 1M tokens)</option>
+                    <option value="average">Average Cost (per 1M tokens)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="performance-metric-select">Performance Metric:</label>
+                <select id="performance-metric-select">
+                    <option value="avgPerHand">Average Chips per Hand</option>
+                    <option value="winRate">Win Rate (%)</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="chart-container">
+            <div class="chart-wrapper">
+                <canvas id="costPerformanceChart"></canvas>
+            </div>
+            <div id="chart-loading" class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading pricing data from OpenRouter...</p>
+            </div>
+            <div id="chart-error" class="error" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Error:</strong> <span id="error-message"></span>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <h3><i class="fas fa-info-circle"></i> About This Chart</h3>
+            <p>
+                This chart compares the poker performance of different LLMs against their API costs from OpenRouter.
+                Models positioned in the top-left quadrant offer the best value (high performance, low cost),
+                while models in the bottom-right are expensive with lower performance.
+            </p>
+            <p>
+                <strong>Note:</strong> Pricing data is fetched from OpenRouter's public models API.
+                Costs shown are per million tokens. Actual costs may vary based on usage patterns.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Last updated: <span id="last-updated">-</span></p>
+            <p>
+                <a href="https://github.com/edenlumbroso/poker" target="_blank">
+                    <i class="fab fa-github"></i> View on GitHub
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/cost-performance.js"></script>
+</body>
+</html>

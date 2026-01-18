@@ -73,7 +73,7 @@ class AIClient:
             completion = self.client.beta.chat.completions.parse(
                 model=self.model,
                 messages=messages,
-                max_tokens=1000,
+                max_tokens=10000,
                 response_format=response_format,
             )
             response = completion.choices[0].message.parsed

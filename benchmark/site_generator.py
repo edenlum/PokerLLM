@@ -84,14 +84,22 @@ class SiteGenerator:
         """Get leaderboard data."""
         leaderboard = self.runner.get_leaderboard()
         
+        # Get registered LLMs to map names to provider/model
+        registered_llms = {llm['name']: llm for llm in self.db.get_registered_llms()}
+        
         result = []
         for rank, (llm_name, avg_per_hand, total_hands, sessions, fallback_rate) in enumerate(leaderboard, 1):
             # Calculate win rate from pairwise results
             win_rate = self.calculate_win_rate(llm_name)
             
+            # Get provider and model from registered LLMs
+            llm_info = registered_llms.get(llm_name, {})
+            
             result.append({
                 "rank": rank,
                 "name": llm_name,
+                "provider": llm_info.get('provider', ''),
+                "model": llm_info.get('model', ''),
                 "avgPerHand": round(avg_per_hand, 2),
                 "totalHands": total_hands,
                 "sessions": sessions,
