@@ -44,7 +44,7 @@ class Player:
                 return f"Cannot {action} to {amount} - need {chips_needed} chips but only have {self.stack}"
             
             # Check minimum bet/raise sizes
-            if action == 'bet' and amount_to_call > 0:
+            if action == 'bet' and amount_to_call - self.current_bet > 0:
                 return "Cannot bet when there's already a bet to call. Use 'raise' instead."
         
         elif action in ['check', 'fold']:

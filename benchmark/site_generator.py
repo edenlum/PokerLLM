@@ -204,7 +204,8 @@ class SiteGenerator:
     
     def get_hand_logs_data(self) -> List[Dict[str, Any]]:
         """Get hand logs data for the website."""
-        hand_logs = self.db.get_hand_logs(limit=500)  # Get recent 500 hands
+        # Get all hand logs (or up to limit) ordered by date DESC so recently updated hands appear first
+        hand_logs = self.db.get_hand_logs(limit=10000)  # Get all hands (or up to 10k)
         
         result = []
         for hand_log in hand_logs:

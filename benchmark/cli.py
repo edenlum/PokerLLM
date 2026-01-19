@@ -80,7 +80,18 @@ def cmd_run_session(args):
     
     try:
         result = runner.run_heads_up_session(llm1_config, llm2_config, args.hands)
-        result_id = db.save_game_result(result)
+        # run_heads_up_session already saves to database internally, so we don't need to save again
+        # Query to get the session ID that was just created
+        import sqlite3
+        with sqlite3.connect(args.db) as conn:
+            conn.row_factory = sqlite3.Row
+            session = conn.execute("""
+                SELECT id FROM game_results 
+                WHERE llm1_name = ? AND llm2_name = ? 
+                AND session_date = ?
+                ORDER BY id DESC LIMIT 1
+            """, (llm1_config['name'], llm2_config['name'], result.session_date)).fetchone()
+            result_id = session['id'] if session else "unknown"
         print(f"✓ Session completed and saved (ID: {result_id})")
     except Exception as e:
         print(f"❌ Session failed: {e}")

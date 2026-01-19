@@ -54,6 +54,45 @@ python benchmark/cli.py results --limit 5
 python benchmark/cli.py results --llm "gpt-4-turbo"
 ```
 
+### 6. Rerun Sessions/Hands with Fallbacks
+
+If you've fixed issues that caused fallback actions, you can rerun only the problematic parts:
+
+**Rerun entire sessions with fallbacks:**
+```bash
+# Dry run - see what would be rerun
+python benchmark/rerun_fallbacks.py --dry-run
+
+# Rerun all sessions with fallbacks (deletes old sessions)
+python benchmark/rerun_fallbacks.py
+
+# Rerun sessions with at least 3 fallbacks
+python benchmark/rerun_fallbacks.py --min-fallbacks 3
+
+# Rerun but keep old sessions (don't delete)
+python benchmark/rerun_fallbacks.py --keep-old
+
+# Rerun with a different number of hands
+python benchmark/rerun_fallbacks.py --max-hands 100
+```
+
+**Rerun only specific hands with fallbacks (more efficient):**
+```bash
+# Dry run - see which hands would be rerun
+python benchmark/rerun_fallback_hands.py --dry-run
+
+# Rerun all hands with fallbacks
+python benchmark/rerun_fallback_hands.py
+
+# Rerun hands from a specific session only
+python benchmark/rerun_fallback_hands.py --session-id 505
+```
+
+The `rerun_fallback_hands.py` script is more efficient as it only reruns the specific hands that had fallbacks, rather than entire sessions. It automatically:
+- Finds hands with fallback actions
+- Reruns only those hands with the same seed/cards
+- Updates hand logs and recalculates session totals
+
 ## How It Works
 
 ### Game Format

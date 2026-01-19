@@ -13,7 +13,7 @@ class HumanPlayer(Player):
         print(f"\nYour turn, {self.name}.")
         print(f"Your hand: {self.hand}")
         print(f"Your stack: {self.stack}")
-        print(f"Amount to call: {amount_to_call}")
+        print(f"Amount to call: {amount_to_call - self.current_bet}")
         print(f"Legal actions: {legal_actions}")
         
         # Show error message from previous attempt if any
@@ -40,7 +40,7 @@ class HumanPlayer(Player):
                     raise ValueError("Amount must be a number.")
             elif action == 'call':
                 # For 'call', use amount_to_call
-                amount = amount_to_call
+                amount = amount_to_call - self.current_bet
             else:
                 amount = 0
             
