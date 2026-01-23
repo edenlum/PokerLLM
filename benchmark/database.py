@@ -268,6 +268,19 @@ class BenchmarkDatabase:
             
             return results
     
+    def get_total_hands_between(self, llm1: str, llm2: str) -> int:
+        """Get total number of hands played between two LLMs across all sessions."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute("""
+                SELECT COALESCE(SUM(hands_played), 0) as total_hands
+                FROM game_results
+                WHERE (llm1_name = ? AND llm2_name = ?) 
+                   OR (llm1_name = ? AND llm2_name = ?)
+            """, (llm1, llm2, llm2, llm1))
+            
+            result = cursor.fetchone()
+            return result[0] if result else 0
+    
     def register_llm_config(self, name: str, provider: str, model: str, 
                            temperature: float = 0.7, config_json: str = "{}"):
         """Register an LLM configuration."""

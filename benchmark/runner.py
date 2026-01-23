@@ -80,6 +80,12 @@ class BenchmarkRunner:
         initial_stack1 = self.starting_stack
         initial_stack2 = self.starting_stack
         
+        # Get seed offset based on previously played hands between these LLMs
+        # This ensures running tournament twice with N hands = running once with 2N hands
+        seed_offset = self.db.get_total_hands_between(llm1_config['name'], llm2_config['name'])
+        if seed_offset > 0:
+            print(f"🎲 Seed offset: {seed_offset} (continuing from previous sessions)")
+        
         # Create game
         players_data = [(player1.name, self.starting_stack), (player2.name, self.starting_stack)]
         game = Game(players_data, small_blind=self.small_blind, big_blind=self.big_blind)
@@ -107,7 +113,8 @@ class BenchmarkRunner:
             
             try:
                 # Play hand twice with same seed (dealer position increment swaps positions automatically)
-                hand_seed = hands_played  # Use hands_played as deterministic, incremental seed
+                # Use seed_offset + hands_played so running tournament twice = running once with double hands
+                hand_seed = seed_offset + hands_played
                 
                 # Save stacks before first play
                 stack_before_p1 = player1.stack

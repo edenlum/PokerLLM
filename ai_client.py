@@ -75,6 +75,7 @@ class AIClient:
                 messages=messages,
                 max_tokens=10000,
                 response_format=response_format,
+                reasoning_effort="low",
             )
             response = completion.choices[0].message.parsed
             if response is None:
